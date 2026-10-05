@@ -1,4 +1,4 @@
-# setup-devscenario
+# e2e-cli
 
 Installs the [Dev Scenario](https://devscenario.com) CLI, `devscenario`, and puts it on `PATH`, so a workflow can run your Dev Scenario tests on an Android emulator or iOS simulator.
 
@@ -10,7 +10,7 @@ Installs the [Dev Scenario](https://devscenario.com) CLI, `devscenario`, and put
     distribution: corretto
     java-version: '17'
 
-- uses: devscenario/setup-devscenario@v1
+- uses: devscenario/e2e-cli@v1
   with:
     version: 0.2.0   # optional: the latest release when omitted
 
