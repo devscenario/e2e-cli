@@ -30,7 +30,7 @@ devscenario run <input> [options]
 | Project folder (has `devscenario-project.json`) | The project's regression list (`regression.json`), with its test users, param profiles and translations. Build the list in Dev Scenario › Home › Regression builder and push it. |
 | Regression bundle `.zip` | A bundle exported from Dev Scenario › Regression builder › Export bundle. |
 | `flow.yml` | One flow. |
-| Folder of flows | Every `*.yml` / `*.yaml` in it. |
+| Folder of flows | Every `*.yml` in it. |
 
 ### Options
 
