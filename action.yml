@@ -1,0 +1,86 @@
+name: Setup Dev Scenario CLI
+description: Install the devscenario CLI and add it to PATH, to run Dev Scenario end-to-end tests in CI.
+author: Dev Scenario
+branding:
+  icon: play-circle
+  color: purple
+
+inputs:
+  version:
+    description: CLI version to install, e.g. 0.2.0 (or cli-v0.2.0). The latest release when empty.
+    required: false
+    default: ''
+  token:
+    description: Token for the GitHub API, to avoid rate limits when looking up the latest release.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  version:
+    description: The installed version, e.g. 0.2.0.
+    value: ${{ steps.install.outputs.version }}
+  path:
+    description: Folder holding the devscenario executable (already on PATH).
+    value: ${{ steps.install.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        GH_TOKEN: ${{ inputs.token }}
+        RELEASES_REPO: devscenario/devtool-releases
+      run: |
+        set -euo pipefail
+
+        # Java 17+ runs the CLI.
+        if ! command -v java >/dev/null 2>&1; then
+          echo "::error::The devscenario CLI needs Java 17 or later. Add actions/setup-java (java-version: '17') before this step."
+          exit 1
+        fi
+        java_major=$(java -version 2>&1 | sed -nE 's/.*version "([0-9]+).*/\1/p' | head -1)
+        if [ -n "$java_major" ] && [ "$java_major" -lt 17 ]; then
+          echo "::error::The devscenario CLI needs Java 17 or later; this runner has Java $java_major. Use actions/setup-java with java-version: '17'."
+          exit 1
+        fi
+
+        # Which release: the requested one, else the newest cli-v* tag.
+        version="${INPUT_VERSION#cli-v}"
+        version="${version#v}"
+        if [ -z "$version" ]; then
+          auth=()
+          [ -n "${GH_TOKEN:-}" ] && auth=(-H "Authorization: Bearer $GH_TOKEN")
+          tag=$(curl -fsSL ${auth[@]+"${auth[@]}"} "https://api.github.com/repos/$RELEASES_REPO/releases?per_page=100" \
+            | jq -r '[.[] | select(.draft | not) | select(.prerelease | not) | .tag_name | select(startswith("cli-v"))][0] // empty')
+          if [ -z "$tag" ]; then
+            echo "::error::No devscenario CLI release found in $RELEASES_REPO."
+            exit 1
+          fi
+          version="${tag#cli-v}"
+        fi
+        tag="cli-v$version"
+
+        dir="${RUNNER_TOOL_CACHE:-$RUNNER_TEMP}/devscenario/$version"
+        if [ ! -d "$dir/bin" ]; then
+          zip="$RUNNER_TEMP/devscenario-$tag.zip"
+          url="https://github.com/$RELEASES_REPO/releases/download/$tag/devscenario-$tag.zip"
+          echo "Downloading $url"
+          if ! curl -fsSL -o "$zip" "$url"; then
+            echo "::error::Could not download devscenario $version ($url). Check the version exists at https://github.com/$RELEASES_REPO/releases."
+            exit 1
+          fi
+          tmp="$RUNNER_TEMP/devscenario-unzip-$version"
+          rm -rf "$tmp" && mkdir -p "$tmp"
+          unzip -q "$zip" -d "$tmp"
+          root=$(dirname "$(dirname "$(find "$tmp" -path '*/bin/devscenario' -type f | head -1)")")
+          mkdir -p "$(dirname "$dir")"
+          rm -rf "$dir" && mv "$root" "$dir"
+          chmod +x "$dir/bin/devscenario"
+        fi
+
+        echo "$dir/bin" >> "$GITHUB_PATH"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "path=$dir/bin" >> "$GITHUB_OUTPUT"
+        echo "Installed devscenario $version"
