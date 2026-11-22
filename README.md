@@ -27,7 +27,7 @@ devscenario run <input> [options]
 
 | Input | Runs |
 |---|---|
-| Project folder (has `devscenario-project.json`) | The project's regression list (`regression.json`), with its param profiles and translations. Build the list in Dev Scenario › Home › Regression builder and push it. |
+| Project folder (has `devscenario-project.json`) | One of the project's suites (`suites.json`), with its param profiles and translations: the only suite, or the one `--suite` names. `--scenario` runs one scenario or chain instead. |
 | `flow.ds` | One flow. |
 | Folder of flows | Every `*.ds` in it. |
 
@@ -40,6 +40,8 @@ CLI 1.9.0 and older also take a regression bundle `.zip` exported from Dev Scena
 | `--platform android\|ios\|both` | Where to run. Android when omitted. |
 | `--device ID` | Device serial or simulator UDID. The first connected device (or booted simulator) when omitted. |
 | `--ios-physical` | Run on a USB-connected iPhone/iPad (needs `--platform ios --device UDID`). |
+| `--suite NAME` | Project folder: the suite to run. Needed when the project has more than one. |
+| `--scenario NAME` | Project folder: run this scenario or chain instead of a suite. |
 | `--profile NAME` | Project folder: param profile for scenarios and chains that don't pin one. The project's only profile when omitted. |
 | `--android-driver-mode uiautomator-shell\|in-app-sdk` | How Android is driven. UIAutomator (any APK) by default; `in-app-sdk` is much faster when the app includes the Dev Scenario SDK. |
 | `--ios-driver-mode wda\|in-app-sdk` | How iOS is driven. WebDriverAgent by default; `in-app-sdk` is much faster when the app includes the Dev Scenario SDK. |
