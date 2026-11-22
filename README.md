@@ -28,9 +28,10 @@ devscenario run <input> [options]
 | Input | Runs |
 |---|---|
 | Project folder (has `devscenario-project.json`) | The project's regression list (`regression.json`), with its param profiles and translations. Build the list in Dev Scenario › Home › Regression builder and push it. |
-| Regression bundle `.zip` | A bundle exported from Dev Scenario › Regression builder › Export bundle. |
-| `flow.yml` | One flow. |
-| Folder of flows | Every `*.yml` in it. |
+| `flow.ds` | One flow. |
+| Folder of flows | Every `*.ds` in it. |
+
+CLI 1.9.0 and older also take a regression bundle `.zip` exported from Dev Scenario; later releases run the project folder instead.
 
 ### Options
 
@@ -49,7 +50,8 @@ devscenario run <input> [options]
 | `--timeout MS` | Time limit for each flow. |
 | `--wait-timeout-ms MS` | Default wait for elements (`assertVisible`, `tapOn`, …) when a command sets none. |
 | `--shard-split N` / `--shard-all N` | Spread flows over N devices, or run every flow on all N. |
-| `--with-mocks` | Bundle only: serve the bundle's API mocks and pass `DEVTOOL_MOCK_BASE_URL` to the run. |
+| `--with-mocks` | Project folder: start the mock server (seeded from `mocks/`) even when no scenario or chain selects a mock group. Mocks a scenario or chain selects start by themselves, and the run gets `DEVTOOL_MOCK_BASE_URL`. |
+| `--no-mocks` | Never start the mock server. |
 | `--artifact-root DIR` | Where reports and screenshots go. |
 | `--run-id ID` | Name of the run in reports. |
 | `--pretty` | Readable progress lines instead of one JSON event per line. |
